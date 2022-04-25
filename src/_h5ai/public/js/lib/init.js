@@ -1,5 +1,4 @@
 const {dom, awaitReady} = require('./util');
-const config = require('./config');
 
 const name = dom('script[data-module]').attr('data-module');
 const query = {
@@ -18,6 +17,5 @@ if (name === 'index') {
     throw new Error(`no-main-module: '${name}'`);
 }
 
-config._update(query)
-    .then(() => awaitReady())
+awaitReady()
     .then(() => require(`./main/${name}`));
