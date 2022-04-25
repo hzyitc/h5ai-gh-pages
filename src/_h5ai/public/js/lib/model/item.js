@@ -174,6 +174,18 @@ Item.prototype = {
         return fetchContent(this.absHref);
     },
 
+    getRelPathTo(parent) {
+        if (!parent.endsWith('/') || !this.absHref.startsWith(parent)) {
+            return null;
+        }
+
+        return this.absHref.slice(parent.length);
+    },
+
+    getRelPathToRoot() {
+        return this.getRelPathTo(settings.rootHref);
+    },
+
     getCrumb() {
         let item = this; // eslint-disable-line consistent-this
         const crumb = [item];

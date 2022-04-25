@@ -1,5 +1,6 @@
 const {each, values, difference} = require('../util');
-const {request} = require('../server');
+const {request} = require('@octokit/request');
+const config = require('../config');
 const allsettings = require('./settings');
 const event = require('./event');
 const notification = require('../view/notification');
@@ -70,20 +71,33 @@ const encodedHref = href => {
     return forceEncoding(location);
 };
 
+const trimEndSlash = path => {
+    return path.replace(/\/+$/, '');
+};
+
 const getDomain = () => doc.domain;
 const getAbsHref = () => absHref;
 const getItem = () => require('../model/item').get(absHref);
 
 const load = () => {
-    return request({action: 'get', items: {href: absHref, what: 1}}).then(json => {
+    return request('GET /repos/{owner}/{repo}/contents/{path}', {
+        owner: config.repo.owner,
+        repo: config.repo.repo,
+        ref: config.repo.branch,
+        path: trimEndSlash(getItem().getRelPathToRoot())
+    }).then(resp => {
         const Item = require('../model/item');
         const item = Item.get(absHref);
 
-        if (json) {
+        if (resp.status === 200) {
             const found = {};
 
-            each(json.items, jsonItem => {
-                const e = Item.get(jsonItem);
+            each(resp.data, i => {
+                const e = Item.get({
+                    href: allsettings.rootHref + i.path + (i.type === 'dir' ? '/' : ''),
+                    size: i.size,
+                    managed: true
+                });
                 found[e.absHref] = true;
             });
 

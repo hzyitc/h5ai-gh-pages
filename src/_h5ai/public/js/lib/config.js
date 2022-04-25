@@ -4,6 +4,12 @@ const {request} = require('./server');
 const config = module.exports = {
     _update: query => request(query).then(resp => Object.assign(config, resp)),
 
+    repo: {
+        owner: 'hzyitc',
+        repo: 'h5ai-gh-pages',
+        branch: 'gh-pages'
+    },
+
     'langs': {
         'af': 'afrikaans',
         'bg': 'български',
