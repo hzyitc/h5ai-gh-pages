@@ -19,13 +19,7 @@ const WEBPACK_CFG = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: [
-                            ['@babel/preset-env', {
-                                targets: {
-                                    esmodules: true
-                                }
-                            }]
-                        ]
+                        presets: ['@babel/preset-env']
                     }
                 }
             },
