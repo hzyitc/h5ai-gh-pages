@@ -1,5 +1,6 @@
 const {keys, each, filter, sortBy, isStr, isNum} = require('../util');
-const server = require('../server');
+const {request} = require('@octokit/request');
+const config = require('../config');
 const location = require('../core/location');
 const settings = require('../core/settings');
 const types = require('../core/types');
@@ -11,8 +12,10 @@ const cache = {};
 
 const startsWith = (sequence, part) => isStr(sequence) && sequence.startsWith(part);
 
+const trimEndSlash = sequence => sequence.replace(reEndsWithSlash, '');
+
 const createLabel = sequence => {
-    sequence = sequence.replace(reEndsWithSlash, '');
+    sequence = trimEndSlash(sequence);
     try {
         sequence = decodeURIComponent(sequence);
     } catch (e) {/* skip */}
@@ -64,9 +67,6 @@ const getItem = options => {
     if (isNum(options.size)) {
         item.size = options.size;
     }
-    if (options.managed) {
-        item.isManaged = true;
-    }
     if (options.fetched) {
         item.isContentFetched = true;
     }
@@ -97,11 +97,32 @@ const fetchContent = absHref => {
         if (item.isContentFetched) {
             resolve(item);
         } else {
-            server.request({action: 'get', items: {href: item.absHref, what: 1}}).then(response => {
-                if (response.items) {
-                    each(response.items, jsonItem => {
-                        getItem(jsonItem);
+            const path = trimEndSlash(item.getRelPathToRoot());
+            // `path` has been encoded, so use in `url` directly
+            // use in `obj` will cause nested encoding
+            request(`GET /repos/{owner}/{repo}/contents/${path}`, {
+                owner: config.repo.owner,
+                repo: config.repo.repo,
+                ref: config.repo.branch
+            }).then(response => {
+                if (response.status === 200) {
+                    const found = {};
+
+                    each(response.data, i => {
+                        const e = getItem({
+                            href: settings.rootHref + i.path + (i.type === 'dir' ? '/' : ''),
+                            size: i.type === 'dir' ? i.size : null
+                        });
+                        found[e.absHref] = true;
                     });
+
+                    each(item.content, e => {
+                        if (!found[e.absHref]) {
+                            removeItem(e.absHref);
+                        }
+                    });
+
+                    item.isContentFetched = true;
                 }
 
                 resolve(item);
@@ -121,7 +142,6 @@ const Item = absHref => {
         time: null,
         size: null,
         parent: null,
-        isManaged: null,
         content: {}
     });
 
@@ -168,6 +188,20 @@ Item.prototype = {
 
     isEmpty() {
         return keys(this.content).length === 0;
+    },
+
+    isManaged() {
+        if (!this.isFolder()) {
+            return false;
+        }
+
+        let result = true;
+        each(this.content, item => {
+            if (config.options.view.unmanaged.indexOf(item.label) !== -1) {
+                result = false;
+            }
+        });
+        return result;
     },
 
     fetchContent() {

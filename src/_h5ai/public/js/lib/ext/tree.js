@@ -83,13 +83,13 @@ const update = item => {
         $html.addCls('active');
     }
 
-    if (!item.isManaged) {
+    if (!item.isManaged()) {
         $html.find('.icon img').attr('src', resource.icon('folder-page'));
     }
 
     // indicator
     item._treeState = item._treeState || 'none';
-    if (item.isManaged && !item.isContentFetched) {
+    if (item.isManaged() && !item.isContentFetched) {
         item._treeState = 'unknown';
     } else if (!subLen) {
         item._treeState = 'none';

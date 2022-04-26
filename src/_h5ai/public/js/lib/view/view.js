@@ -152,7 +152,7 @@ const createHtml = item => {
     $size.attr('data-bytes', item.size).text(format.formatSize(item.size));
     item.icon = resource.icon(item.type);
 
-    if (item.isFolder() && !item.isManaged) {
+    if (item.isFolder() && !item.isManaged()) {
         $html.addCls('page');
         item.icon = resource.icon('folder-page');
     }

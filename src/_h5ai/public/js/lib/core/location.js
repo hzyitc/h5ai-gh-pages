@@ -97,8 +97,7 @@ const load = () => {
             each(resp.data, i => {
                 const e = Item.get({
                     href: allsettings.rootHref + i.path + (i.type === 'dir' ? '/' : ''),
-                    size: i.size,
-                    managed: true
+                    size: i.size
                 });
                 found[e.absHref] = true;
             });
@@ -163,7 +162,7 @@ const setLocation = (newAbsHref, keepBrowserUrl) => {
 const setLink = ($el, item) => {
     $el.attr('href', item.absHref);
 
-    if (history && item.isFolder() && item.isManaged) {
+    if (history && item.isFolder() && item.isManaged()) {
         $el.on('click', ev => {
             setLocation(item.absHref);
             ev.preventDefault();
@@ -171,7 +170,7 @@ const setLink = ($el, item) => {
         });
     }
 
-    if (settings.unmanagedInNewWindow && !item.isManaged) {
+    if (settings.unmanagedInNewWindow && !item.isManaged()) {
         $el.attr('target', '_blank');
     }
 };

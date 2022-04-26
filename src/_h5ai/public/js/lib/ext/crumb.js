@@ -29,7 +29,7 @@ const createHtml = item => {
         $html.addCls('active');
     }
 
-    if (!item.isManaged) {
+    if (!item.isManaged()) {
         $html.app(dom(pageHintTpl));
     }
 
