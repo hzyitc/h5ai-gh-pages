@@ -80,11 +80,13 @@ const getAbsHref = () => absHref;
 const getItem = () => require('../model/item').get(absHref);
 
 const load = () => {
-    return request('GET /repos/{owner}/{repo}/contents/{path}', {
+    const path = trimEndSlash(getItem().getRelPathToRoot());
+    // `path` has been encoded, so use in `url` directly
+    // use in `obj` will cause nested encoding
+    return request(`GET /repos/{owner}/{repo}/contents/${path}`, {
         owner: config.repo.owner,
         repo: config.repo.repo,
-        ref: config.repo.branch,
-        path: trimEndSlash(getItem().getRelPathToRoot())
+        ref: config.repo.branch
     }).then(resp => {
         const Item = require('../model/item');
         const item = Item.get(absHref);
