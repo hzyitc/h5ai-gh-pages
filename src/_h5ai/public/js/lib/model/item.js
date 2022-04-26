@@ -1,4 +1,4 @@
-const {keys, each, filter, sortBy, isStr, isNum} = require('../util');
+const {keys, each, filter, map, sortBy, isStr, isNum} = require('../util');
 const {request} = require('@octokit/request');
 const config = require('../config');
 const location = require('../core/location');
@@ -205,7 +205,12 @@ Item.prototype = {
     },
 
     fetchContent() {
-        return fetchContent(this.absHref);
+        return fetchContent(this.absHref)
+            .then(item =>
+                Promise.all(map(item.getSubfolders(), i =>
+                    fetchContent(i.absHref)
+                ))
+            );
     },
 
     getRelPathTo(parent) {
