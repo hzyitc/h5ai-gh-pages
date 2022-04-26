@@ -111,7 +111,7 @@ const fetchContent = absHref => {
                     each(response.data, i => {
                         const e = getItem({
                             href: settings.rootHref + i.path + (i.type === 'dir' ? '/' : ''),
-                            size: i.type === 'dir' ? i.size : null
+                            size: i.type !== 'dir' ? i.size : null
                         });
                         found[e.absHref] = true;
                     });
