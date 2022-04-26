@@ -1,6 +1,4 @@
-const {each, values, difference} = require('../util');
-const {request} = require('@octokit/request');
-const config = require('../config');
+const {values, difference} = require('../util');
 const allsettings = require('./settings');
 const event = require('./event');
 const notification = require('../view/notification');
@@ -71,46 +69,12 @@ const encodedHref = href => {
     return forceEncoding(location);
 };
 
-const trimEndSlash = path => {
-    return path.replace(/\/+$/, '');
-};
-
 const getDomain = () => doc.domain;
 const getAbsHref = () => absHref;
 const getItem = () => require('../model/item').get(absHref);
 
 const load = () => {
-    const path = trimEndSlash(getItem().getRelPathToRoot());
-    // `path` has been encoded, so use in `url` directly
-    // use in `obj` will cause nested encoding
-    return request(`GET /repos/{owner}/{repo}/contents/${path}`, {
-        owner: config.repo.owner,
-        repo: config.repo.repo,
-        ref: config.repo.branch
-    }).then(resp => {
-        const Item = require('../model/item');
-        const item = Item.get(absHref);
-
-        if (resp.status === 200) {
-            const found = {};
-
-            each(resp.data, i => {
-                const e = Item.get({
-                    href: allsettings.rootHref + i.path + (i.type === 'dir' ? '/' : ''),
-                    size: i.size
-                });
-                found[e.absHref] = true;
-            });
-
-            each(item.content, e => {
-                if (!found[e.absHref]) {
-                    Item.remove(e.absHref);
-                }
-            });
-        }
-
-        return item;
-    });
+    return getItem().fetchContent();
 };
 
 const refresh = () => {
