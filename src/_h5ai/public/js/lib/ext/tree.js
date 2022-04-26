@@ -88,10 +88,10 @@ const update = item => {
     }
 
     // indicator
-    item._treeState = item._treeState || 'none';
-    if (item.isManaged() && !item.isContentFetched) {
-        item._treeState = 'unknown';
-    } else if (!subLen) {
+    item._treeState = item._treeState || 'unknown';
+    if (!item.isManaged()) {
+        item._treeState = 'none';
+    } else if (item.isContentFetched && subLen === 0) {
         item._treeState = 'none';
     }
     $html.addCls(item._treeState);
