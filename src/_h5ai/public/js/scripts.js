@@ -1,3 +1,3 @@
-require("regenerator-runtime/runtime");
+require('regenerator-runtime/runtime');
 
 require('./lib/init');
