@@ -53,7 +53,7 @@ const getItem = options => {
         return null;
     }
 
-    const href = location.forceEncoding(options.href);
+    const href = location.encodedHref(options.href);
 
     if (!startsWith(href, settings.rootHref)) {
         return null;
@@ -75,7 +75,7 @@ const getItem = options => {
 };
 
 const removeItem = absHref => {
-    absHref = location.forceEncoding(absHref);
+    absHref = location.encodedHref(absHref);
 
     const item = cache[absHref];
 

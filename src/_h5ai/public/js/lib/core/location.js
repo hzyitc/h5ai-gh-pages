@@ -10,7 +10,6 @@ const settings = Object.assign({
     unmanagedInNewWindow: true
 }, allsettings.view);
 const history = settings.fastBrowsing ? win.history : null;
-const reUriToPathname = /^.*:\/\/[^\/]*|[^\/]*$/g;
 const reForceEncoding = [
     [/\/+/g, '/'],
     [/ /g, '%20'],
@@ -43,8 +42,12 @@ const forceEncoding = href => {
     }, href);
 };
 
-const uriToPathname = uri => {
-    return uri.replace(reUriToPathname, '');
+const uriToPath = uri => {
+    return uri.replace(/^.*:\/\/[^\/]*/, '');
+};
+
+const getDir = uri => {
+    return uri.replace(/[^\/]*$/, '');
 };
 
 const hrefsAreDecoded = (() => {
@@ -52,7 +55,7 @@ const hrefsAreDecoded = (() => {
     const a = doc.createElement('a');
 
     a.href = testpathname;
-    return uriToPathname(a.href) === testpathname;
+    return uriToPath(a.href) === testpathname;
 })();
 
 const encodedHref = href => {
@@ -60,7 +63,7 @@ const encodedHref = href => {
     let location;
 
     a.href = href;
-    location = uriToPathname(a.href);
+    location = uriToPath(a.href);
 
     if (hrefsAreDecoded) {
         location = encodeURIComponent(location).replace(/%2F/ig, '/');
@@ -95,7 +98,7 @@ const refresh = () => {
 const setLocation = (newAbsHref, keepBrowserUrl) => {
     event.pub('location.beforeChange');
 
-    newAbsHref = encodedHref(newAbsHref);
+    newAbsHref = getDir(encodedHref(newAbsHref));
 
     if (absHref !== newAbsHref) {
         absHref = newAbsHref;
@@ -150,7 +153,7 @@ win.onpopstate = history ? onPopState : null;
 
 
 module.exports = {
-    forceEncoding,
+    encodedHref,
     getDomain,
     getAbsHref,
     getItem,
